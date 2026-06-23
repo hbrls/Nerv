@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "composite": true,
     "declaration": true,
     "declarationDir": "lib",
+    "incremental": false,
     "emitDeclarationOnly": false,
     "rootDir": "src",
     "declarationMap": true,
