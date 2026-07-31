@@ -4,24 +4,25 @@ import type { Vision } from "../features/vision/types";
  * Vision 模拟数据。
  *
  * 手动编辑此文件即可生效，无需改动组件逻辑。
+ * - `a` 标记原点 Vision 的 id，指向 v 轴数组中对应元素。
+ * - v 轴存在正负轴：原点之前为负轴（正下），原点之后为正轴（正上）。
+ * - u/w 轴只正轴，挂在原点上。
  * - `status: null` 表示不确定性占位节点（`•••`），每条轴至多一个（后端控制）。
- * - origin 节点由 VisionBuilder 自动注入，不在此声明。
  */
 export const A: Vision = {
+  a: "VISION-003",
+  v: [
+    { id: "VISION-002", name: "重启 backstage.js 项目", status: "TODO" },
+    { id: "VISION-003", name: "优化 Gitlab 的读取", status: "TODO" },
+    { id: "v-ellipsis", status: null },
+    { id: "VISION-001", name: "重启 backstage.js 项目，优化 Gitlab 的读取", status: "TODO" },
+  ],
   u: [
     { id: "u1", status: "PASS" },
     { id: "u2", status: "TODO" },
     { id: "u-ellipsis", status: null },
     { id: "u5", status: "FAIL" },
     { id: "u6", status: "PASS" },
-  ],
-  v: [
-    { id: "v1", status: "HOLD" },
-    { id: "v2", status: "PASS" },
-    { id: "v3", status: "TODO" },
-    { id: "v-ellipsis", status: null },
-    { id: "v6", status: "FAIL" },
-    { id: "v-ellipsis-2", status: null },
   ],
   w: [
     { id: "w1", status: "TODO" },

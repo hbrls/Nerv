@@ -1,15 +1,20 @@
 import { useState } from "react";
 import { HexGrid, Layout } from "react-hexgrid";
-import { OriginNode } from "../components/OriginNode";
 import { UpNode } from "../components/UpNode";
 import { VisionNode } from "../components/VisionNode";
 import { WorkshopNode } from "../components/WorkshopNode";
 import { A } from "../data/vision";
 import { VisionBuilder } from "../features/vision/VisionBuilder";
+import { visionTitle } from "../features/vision/types";
 
 export function Nerv() {
   const nodes = VisionBuilder(A);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const originId = A.a;
+  const originPoint = nodes.find((node) => node.id === originId);
+  const originTitle = originPoint
+    ? visionTitle({ id: originPoint.id, name: originPoint.name ?? "" })
+    : originId;
 
   return (
     <div className="drawer drawer-end">
@@ -25,14 +30,9 @@ export function Nerv() {
         }}
       />
       <div className="drawer-content">
-        <HexGrid width={1200} height={600} viewBox="-30 -50 200 100" style={{ backgroundColor: "#fff" }}>
+        <HexGrid width={1200} height={600} viewBox="-60 -50 200 100" style={{ backgroundColor: "#fff" }}>
           <Layout size={{ x: 4, y: 4 }} flat={true} spacing={1.15} origin={{ x: 0, y: 0 }}>
             {nodes.map((node) => {
-              if (node.id === "origin") {
-                return (
-                  <OriginNode key={node.id} q={node.q} r={node.r} s={node.s} onSelect={setSelectedId} />
-                );
-              }
               if (node.axis === "w") {
                 return (
                   <WorkshopNode
@@ -51,7 +51,9 @@ export function Nerv() {
                   <VisionNode
                     key={node.id}
                     id={node.id}
+                    name={node.name}
                     status={node.status}
+                    isOrigin={node.id === originId}
                     q={node.q}
                     r={node.r}
                     s={node.s}
@@ -83,7 +85,7 @@ export function Nerv() {
           <div className="flex min-h-14 items-center justify-between gap-3 border-b border-base-300 px-4 py-2">
             <h2 className="min-w-0 flex-1">
               <span className="block truncate text-sm font-semibold leading-5">
-                {selectedId ?? "Vision Node"}
+                {selectedId === originId ? originTitle : (selectedId ?? "Vision Node")}
               </span>
             </h2>
             <button type="button" className="btn btn-ghost btn-sm shrink-0" onClick={() => setSelectedId(null)}>

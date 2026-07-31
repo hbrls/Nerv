@@ -8,11 +8,11 @@ import type { Axis, HexPoint, Vision, VisionPoint } from "./types";
  *
  * 三轴定义（平顶 flat 布局，y 轴向下）：
  *
- *   轴   "+1" 方向   Δ(q,r,s)    锁定坐标
- *   ------------------------------------------------
- *   u    右上       (1,-1, 0)    s
- *   v    正上       (0,-1, 1)    q
- *   w    右下       (1, 0,-1)    r
+ *   轴   "+1" 方向   Δ(q,r,s)    锁定坐标    语义
+ *   ----------------------------------------------------------------
+ *   u    右上       (1,-1, 0)    s           up 轴
+ *   v    正上       (0,-1, 1)    q           vision 轴（Vision 时序链）
+ *   w    右下       (1, 0,-1)    r           workshop 轴
  *
  * 六个方向被 u/v/w 的正负向完全覆盖：
  *
@@ -49,23 +49,54 @@ const AXIS_DELTA: Record<Axis, HexPoint> = {
 };
 
 export function VisionBuilder(vision: Vision): VisionPoint[] {
-  const points: VisionPoint[] = [
-    { id: "origin", ...ORIGIN },
-  ];
+  const points: VisionPoint[] = [];
 
-  (Object.keys(vision) as Axis[]).forEach((axis) => {
+  const vNodes = vision.v;
+  const originIndex = vNodes.findIndex((node) => node.id === vision.a);
+  if (originIndex === -1) {
+    throw new Error(`Vision origin not found: vision.a="${vision.a}" not in v axis`);
+  }
+  const originNode = vNodes[originIndex];
+
+  points.push({
+    id: originNode.id,
+    name: originNode.name,
+    status: originNode.status,
+    axis: "v",
+    ...ORIGIN,
+  });
+
+  const AXES: Axis[] = ["u", "v", "w"];
+  AXES.forEach((axis) => {
     const delta = AXIS_DELTA[axis];
-    vision[axis].forEach((node, index) => {
-      const step = index + 1;
-      points.push({
-        id: node.id,
-        status: node.status,
-        axis,
-        q: ORIGIN.q + delta.q * step,
-        r: ORIGIN.r + delta.r * step,
-        s: ORIGIN.s + delta.s * step,
+    if (axis === "v") {
+      vNodes.forEach((node, index) => {
+        if (index === originIndex) return;
+        const step = index - originIndex;
+        points.push({
+          id: node.id,
+          name: node.name,
+          status: node.status,
+          axis,
+          q: ORIGIN.q + delta.q * step,
+          r: ORIGIN.r + delta.r * step,
+          s: ORIGIN.s + delta.s * step,
+        });
       });
-    });
+    } else {
+      vision[axis].forEach((node, index) => {
+        const step = index + 1;
+        points.push({
+          id: node.id,
+          name: node.name,
+          status: node.status,
+          axis,
+          q: ORIGIN.q + delta.q * step,
+          r: ORIGIN.r + delta.r * step,
+          s: ORIGIN.s + delta.s * step,
+        });
+      });
+    }
   });
 
   return points;

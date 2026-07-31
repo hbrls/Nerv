@@ -1,3 +1,20 @@
+/**
+ * Vision 元信息（Origin 节点的语义）。
+ *
+ * 当用户提出一个 Vision 时，用它初始化为 Origin。
+ * - `id`：真实字段，Vision 唯一标识，如 `"VISION-001"`。
+ * - `name`：真实字段，Vision 的一句话描述。
+ * - `title`：计算字段，= `${id}: ${name}`，用于展示，不存储。
+ */
+export interface VisionMeta {
+  id: string;
+  name: string;
+}
+
+export function visionTitle(meta: Pick<VisionMeta, "id" | "name">): string {
+  return `${meta.id}: ${meta.name}`;
+}
+
 export type VisionStatus = "FAIL" | "HOLD" | "PASS" | "TODO";
 
 /**
@@ -16,6 +33,7 @@ export type VisionStatus = "FAIL" | "HOLD" | "PASS" | "TODO";
  */
 export interface VisionNodeData {
   id: string;
+  name?: string;
   status?: VisionStatus | null;
 }
 
@@ -28,6 +46,11 @@ export interface HexPoint {
 export type Axis = "u" | "v" | "w";
 
 export interface Vision {
+  /**
+   * 原点 Vision 的 id，指向 v 轴数组中某个元素的 id。
+   * 该元素即原点（坐标 0,0,0），u/w 轴挂在原点上。
+   */
+  a: string;
   u: VisionNodeData[];
   v: VisionNodeData[];
   w: VisionNodeData[];
@@ -43,6 +66,7 @@ export interface Vision {
  */
 export interface VisionPoint {
   id: string;
+  name?: string;
   status?: VisionStatus | null;
   /**
    * 所属轴（天然 type）。origin 节点不带 axis。
