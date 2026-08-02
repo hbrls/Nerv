@@ -1,20 +1,44 @@
 import { useState } from "react";
-import { HexGrid, Layout } from "react-hexgrid";
+import { Hexagon, HexGrid, Layout } from "react-hexgrid";
+import { useParams } from "react-router-dom";
 import { UpNode } from "../components/UpNode";
 import { VisionNode } from "../components/VisionNode";
 import { WorkshopNode } from "../components/WorkshopNode";
-import { A } from "../data/vision";
-import { VisionBuilder } from "../features/vision/VisionBuilder";
+import { b as nerv1 } from "../data/nerv-1";
+import { b as nerv2 } from "../data/nerv-2";
+import type { AxisCanvasNode, CanvasNode } from "../features/vision/types";
 import { visionTitle } from "../features/vision/types";
+import { NotFound } from "./NotFound";
+
+const NERV_DATASETS: Record<string, CanvasNode[]> = {
+  "nerv-1": nerv1,
+  "nerv-2": nerv2,
+};
 
 export function Nerv() {
-  const nodes = VisionBuilder(A);
+  const { nervId } = useParams();
+  const nodes = nervId ? NERV_DATASETS[nervId] : undefined;
+
+  if (!nodes) {
+    return <NotFound />;
+  }
+
+  return <NervCanvas key={nervId} nodes={nodes} />;
+}
+
+interface NervCanvasProps {
+  nodes: CanvasNode[];
+}
+
+function NervCanvas({ nodes }: NervCanvasProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const originId = A.a;
-  const originPoint = nodes.find((node) => node.id === originId);
+  const originPoint = nodes.find(
+    (node): node is AxisCanvasNode => node.type === "v" && node.isOrigin === true,
+  );
+  const originId = originPoint?.id;
   const originTitle = originPoint
     ? visionTitle({ id: originPoint.id, name: originPoint.name ?? "" })
-    : originId;
+    : "Vision Node";
 
   return (
     <div className="drawer drawer-end">
@@ -30,10 +54,22 @@ export function Nerv() {
         }}
       />
       <div className="drawer-content">
-        <HexGrid width={1200} height={600} viewBox="-60 -50 200 100" style={{ backgroundColor: "#fff" }}>
+        <HexGrid width={1200} height={750} viewBox="-60 -50 200 100" style={{ backgroundColor: "#fff" }}>
           <Layout size={{ x: 4, y: 4 }} flat={true} spacing={1.15} origin={{ x: 0, y: 0 }}>
             {nodes.map((node) => {
-              if (node.axis === "w") {
+              if (node.type === "empty") {
+                return (
+                  <Hexagon
+                    key={`empty:${node.q},${node.r},${node.s}`}
+                    q={node.q}
+                    r={node.r}
+                    s={node.s}
+                    className={`nerv-grid-cell-empty nerv-grid-cell-empty--${node.presentation}`}
+                    aria-hidden="true"
+                  />
+                );
+              }
+              if (node.type === "w") {
                 return (
                   <WorkshopNode
                     key={node.id}
@@ -46,14 +82,14 @@ export function Nerv() {
                   />
                 );
               }
-              if (node.axis === "v") {
+              if (node.type === "v") {
                 return (
                   <VisionNode
                     key={node.id}
                     id={node.id}
                     name={node.name}
                     status={node.status}
-                    isOrigin={node.id === originId}
+                    isOrigin={node.isOrigin}
                     q={node.q}
                     r={node.r}
                     s={node.s}
@@ -61,7 +97,7 @@ export function Nerv() {
                   />
                 );
               }
-              if (node.axis === "u") {
+              if (node.type === "u") {
                 return (
                   <UpNode
                     key={node.id}

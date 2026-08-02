@@ -15,7 +15,9 @@ export function AppRoutes() {
       <Route element={<AppShell />}>
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/nerv" element={<Nerv />} />
+        <Route path="/nerv" element={<Navigate to="/nervs/nerv-1" replace />} />
+        <Route path="/nervs" element={<Navigate to="/nervs/nerv-1" replace />} />
+        <Route path="/nervs/:nervId" element={<Nerv />} />
         <Route path="/system/info" element={<SystemInfo />} />
         <Route path="/system/command" element={<CommandRunner />} />
         <Route path="/system/scheduler" element={<Scheduler />} />

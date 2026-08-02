@@ -77,3 +77,17 @@ export interface VisionPoint {
   r: number;
   s: number;
 }
+
+export type EmptyPresentation = "hover" | "persistent";
+
+export interface EmptyCanvasNode extends HexPoint {
+  type: "empty";
+  presentation: EmptyPresentation;
+}
+
+export interface AxisCanvasNode extends VisionPoint {
+  type: Axis;
+  isOrigin?: boolean;
+}
+
+export type CanvasNode = AxisCanvasNode | EmptyCanvasNode;

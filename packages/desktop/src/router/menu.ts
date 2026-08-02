@@ -20,7 +20,13 @@ export const menuGroups: MenuGroup[] = [
     label: "Overview",
     items: [
       { label: "Dashboard", path: "/dashboard" },
-      { label: "Nerv", path: "/nerv" },
+      {
+        label: "Nerv",
+        children: [
+          { label: "Nerv-1", path: "/nervs/nerv-1" },
+          { label: "Nerv-2", path: "/nervs/nerv-2" },
+        ],
+      },
     ],
   },
   {
@@ -40,7 +46,3 @@ export const menuGroups: MenuGroup[] = [
     items: [{ label: "About", path: "/about" }],
   },
 ];
-
-export function findMenuItem(pathname: string) {
-  return menuGroups.flatMap((group) => group.items).find((item) => item.path === pathname);
-}
