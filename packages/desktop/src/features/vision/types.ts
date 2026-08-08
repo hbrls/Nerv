@@ -15,26 +15,25 @@ export function visionTitle(meta: Pick<VisionMeta, "id" | "name">): string {
   return `${meta.id}: ${meta.name}`;
 }
 
-export type VisionStatus = "FAIL" | "HOLD" | "PASS" | "TODO";
+export type BusinessStatus = "FAIL" | "HOLD" | "PASS" | "TODO" | "UNKNOWN";
 
 /**
  * 单轴节点的原始数据。
  *
- * `status` 三态语义：
+ * `status` 语义：
  * - `undefined`：未设置（如 origin，或调用方未提供）。
- * - `null`：显式标记该节点为「不确定性占位节点」（`...`），代表轴上存在一段
- *   身份未知 / 待澄清的内容。渲染层据此以白色背景 + 文本 `...` 呈现。
- * - `VisionStatus`：正常的确定性节点状态。
+ * - `UNKNOWN`：显式标记该节点为「不确定性占位节点」（`...`），代表轴上存在一段
+ *   身份未知 / 待澄清的内容。渲染层据此以无边框节点 + 文本 `...` 呈现。
+ * - 其他 `BusinessStatus`：正常的确定性节点状态。
  *
- * `...` 节点约束（由后端数据库控制，前端不校验）：
- * - 每条轴至多一个 `...` 节点；
+ * `...` 节点语义：
  * - 可出现在轴的任意位置（开头 / 中间 / 末尾）；
  * - 不代表连续区间的省略，而是一个独立的不确定性占位。
  */
-export interface VisionNodeData {
+export interface ContentNodeData {
   id: string;
   name?: string;
-  status?: VisionStatus | null;
+  status?: BusinessStatus;
 }
 
 export interface HexPoint {
@@ -45,32 +44,47 @@ export interface HexPoint {
 
 export type Axis = "u" | "v" | "w";
 
+/**
+ * 锚定在某个既有 ContentNode 上的局部轴。
+ *
+ * 节点按数组顺序从锚点沿对应方向正向排列；锚点本身仍属于父轴，
+ * 不在子轴中重复定义。子轴上的节点也可以继续作为其他子轴的锚点。
+ */
+export interface AnchoredAxis {
+  anchorId: string;
+  u?: ContentNodeData[];
+  v?: ContentNodeData[];
+  w?: ContentNodeData[];
+}
+
 export interface Vision {
   /**
    * 原点 Vision 的 id，指向 v 轴数组中某个元素的 id。
    * 该元素即原点（坐标 0,0,0），u/w 轴挂在原点上。
    */
   a: string;
-  u: VisionNodeData[];
-  v: VisionNodeData[];
-  w: VisionNodeData[];
+  u: ContentNodeData[];
+  v: ContentNodeData[];
+  w: ContentNodeData[];
+  /** 按依赖关系解析的局部轴；允许锚定到主轴或先前子轴的节点。 */
+  axes?: AnchoredAxis[];
 }
 
 /**
- * 轴上节点渲染后的几何点。`status` 透传自 `VisionNodeData`：
- * - `null`：`...` 不确定性占位节点，占用一个 index，沿用 `step = index + 1`
+ * 轴上节点渲染后的几何点。`status` 透传自 `ContentNodeData`：
+ * - `UNKNOWN`：`...` 不确定性占位节点，占用一个 index，沿用 `step = index + 1`
  *   的连续坐标规则；其「不连续」是语义层（真实身份跳号）而非坐标层。
- *   渲染为白色背景 + 文本 `...`（与 origin 同色）。
+ *   渲染为无边框节点 + 文本 `...`，hover 时显示白色背景。
  * - `undefined`：未设置（如 origin）。
- * - `VisionStatus`：正常节点状态。
+ * - 其他 `BusinessStatus`：正常节点状态。
  */
-export interface VisionPoint {
+export interface ContentPoint {
   id: string;
   name?: string;
-  status?: VisionStatus | null;
+  status?: BusinessStatus;
   /**
-   * 所属轴（天然 type）。origin 节点不带 axis。
-   * 渲染层据此分发到对应 Node 的 render function（如 w → WorkshopNode）。
+   * 所属轴（天然 type）。origin 节点属于 v 轴。
+   * 渲染层据此分发到对应 Node 的 render function（如 w → WorkNode）。
    */
   axis?: Axis;
   q: number;
@@ -78,16 +92,15 @@ export interface VisionPoint {
   s: number;
 }
 
-export type EmptyPresentation = "hover" | "persistent";
-
 export interface EmptyCanvasNode extends HexPoint {
   type: "empty";
-  presentation: EmptyPresentation;
+  /** 离线计算出的默认可见性；hover 只临时覆盖该值。 */
+  visible: boolean;
 }
 
-export interface AxisCanvasNode extends VisionPoint {
+export interface ContentCanvasNode extends ContentPoint {
   type: Axis;
   isOrigin?: boolean;
 }
 
-export type CanvasNode = AxisCanvasNode | EmptyCanvasNode;
+export type CanvasNode = ContentCanvasNode | EmptyCanvasNode;

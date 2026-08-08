@@ -1,18 +1,21 @@
 import { useState } from "react";
-import { Hexagon, HexGrid, Layout } from "react-hexgrid";
+import { HexGrid, Layout } from "react-hexgrid";
 import { useParams } from "react-router-dom";
+import { EmptyNode } from "../components/EmptyNode";
 import { UpNode } from "../components/UpNode";
 import { VisionNode } from "../components/VisionNode";
-import { WorkshopNode } from "../components/WorkshopNode";
+import { WorkNode } from "../components/WorkNode";
 import { b as nerv1 } from "../data/nerv-1";
 import { b as nerv2 } from "../data/nerv-2";
-import type { AxisCanvasNode, CanvasNode } from "../features/vision/types";
+import { b as nerv3 } from "../data/nerv-3";
+import type { ContentCanvasNode, CanvasNode } from "../features/vision/types";
 import { visionTitle } from "../features/vision/types";
 import { NotFound } from "./NotFound";
 
 const NERV_DATASETS: Record<string, CanvasNode[]> = {
   "nerv-1": nerv1,
   "nerv-2": nerv2,
+  "nerv-3": nerv3,
 };
 
 export function Nerv() {
@@ -33,7 +36,7 @@ interface NervCanvasProps {
 function NervCanvas({ nodes }: NervCanvasProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const originPoint = nodes.find(
-    (node): node is AxisCanvasNode => node.type === "v" && node.isOrigin === true,
+    (node): node is ContentCanvasNode => node.type === "v" && node.isOrigin === true,
   );
   const originId = originPoint?.id;
   const originTitle = originPoint
@@ -55,25 +58,25 @@ function NervCanvas({ nodes }: NervCanvasProps) {
       />
       <div className="drawer-content">
         <HexGrid width={1200} height={750} viewBox="-60 -50 200 100" style={{ backgroundColor: "#fff" }}>
-          <Layout size={{ x: 4, y: 4 }} flat={true} spacing={1.15} origin={{ x: 0, y: 0 }}>
+          <Layout size={{ x: 5, y: 5 }} flat={true} spacing={1.2} origin={{ x: 0, y: 0 }}>
             {nodes.map((node) => {
               if (node.type === "empty") {
                 return (
-                  <Hexagon
+                  <EmptyNode
                     key={`empty:${node.q},${node.r},${node.s}`}
                     q={node.q}
                     r={node.r}
                     s={node.s}
-                    className={`nerv-grid-cell-empty nerv-grid-cell-empty--${node.presentation}`}
-                    aria-hidden="true"
+                    visible={node.visible}
                   />
                 );
               }
               if (node.type === "w") {
                 return (
-                  <WorkshopNode
+                  <WorkNode
                     key={node.id}
                     id={node.id}
+                    name={node.name}
                     status={node.status}
                     q={node.q}
                     r={node.r}
@@ -102,6 +105,7 @@ function NervCanvas({ nodes }: NervCanvasProps) {
                   <UpNode
                     key={node.id}
                     id={node.id}
+                    name={node.name}
                     status={node.status}
                     q={node.q}
                     r={node.r}
