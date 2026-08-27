@@ -5,6 +5,7 @@ import { EmptyNode } from "../components/EmptyNode";
 import { UpNode } from "../components/UpNode";
 import { VisionNode } from "../components/VisionNode";
 import { WorkNode } from "../components/WorkNode";
+import { b as innovation } from "../data/nerv-innovation";
 import { b as nerv1 } from "../data/nerv-1";
 import { b as nerv2 } from "../data/nerv-2";
 import { b as nerv3 } from "../data/nerv-3";
@@ -16,6 +17,7 @@ const NERV_DATASETS: Record<string, CanvasNode[]> = {
   "nerv-1": nerv1,
   "nerv-2": nerv2,
   "nerv-3": nerv3,
+  innovation,
 };
 
 export function Nerv() {

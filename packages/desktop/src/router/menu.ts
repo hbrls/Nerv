@@ -26,6 +26,7 @@ export const menuGroups: MenuGroup[] = [
           { label: "Nerv-1", path: "/nervs/nerv-1" },
           { label: "Nerv-2", path: "/nervs/nerv-2" },
           { label: "Nerv-3", path: "/nervs/nerv-3" },
+          { label: "创新", path: "/nervs/innovation" },
         ],
       },
     ],
